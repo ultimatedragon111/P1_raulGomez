@@ -17,8 +17,9 @@ public class Dao {
     public static final String PASS_CONNECTION = "root";
 
     public static final String GET_ID_PLAYER = "select * from jugador where usuario=? AND password=?  ";
-    public static final String GET_COUNT_CARDS = "select numero,color from carta where id_jugador = ?  ";
+    public static final String GET_COUNT_CARDS = "select id,numero,color from carta where id_jugador = ? AND id NOT IN (SELECT id_carta FROM partida)";
     public static final String INSERT_CARD_CARDS = "insert into carta (id_jugador,numero,color) VALUES (?,?,?);";
+    public static final String INSERT_CARD_TABLE = "insert into partida (id_carta) VALUES (?);";
 
     public void connectar() throws SQLException {
         String url = CONNECTION;
@@ -53,12 +54,12 @@ public class Dao {
         try (PreparedStatement ps = conexion.prepareStatement(GET_COUNT_CARDS)) {
             ps.setInt(1,id_jugador);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    String numero = rs.getString(1);
-                    String color = rs.getString(2);
-                    Carta carta = new Carta(id_jugador,numero,color);
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    String numero = rs.getString(2);
+                    String color = rs.getString(3);
+                    Carta carta = new Carta(id,id_jugador,numero,color);
                     mano.add(carta);
-
                 }
             }
         } catch (SQLException throwables) {
@@ -75,8 +76,16 @@ public class Dao {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
+    }
+    public void addCartaTable(Carta carta){
+        try (PreparedStatement ps = conexion.prepareStatement(INSERT_CARD_TABLE)) {
+            ps.setInt(1,carta.getId_carta());
+            ps.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
     }
+}
 
 
 
