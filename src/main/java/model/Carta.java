@@ -5,14 +5,22 @@ public class Carta {
     public int id_jugador;
     public String numero;
     public String color;
+    public int estat;
     public Carta(int id_jugador){
         this.id_jugador = id_jugador;
     }
-    public Carta(int id_carta,int id_jugador, String numero , String color){
+    public Carta(int id_carta,int id_jugador, String numero , String color, int estat){
         this.id_carta = id_carta;
         this.id_jugador = id_jugador;
         this.numero = numero;
         this.color = color;
+        this.estat = estat;
+    }
+    public Carta(int id_carta, String numero , String color, int estat){
+        this.id_carta = id_carta;
+        this.numero = numero;
+        this.color = color;
+        this.estat = estat;
     }
 
     public int getId_jugador() {
@@ -47,12 +55,22 @@ public class Carta {
         this.id_carta = id_carta;
     }
 
+    public int getEstat() {
+        return estat;
+    }
+
+    public void setEstat(int estat) {
+        this.estat = estat;
+    }
+
     @Override
     public String toString() {
         return "Carta{" +
-                "id_jugador=" + id_jugador +
+                "id_carta=" + id_carta +
+                ", id_jugador=" + id_jugador +
                 ", numero='" + numero + '\'' +
                 ", color='" + color + '\'' +
+                ", estat=" + estat +
                 '}';
     }
 }
