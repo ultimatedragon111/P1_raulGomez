@@ -2,8 +2,8 @@ package controller;
 
 import dao.Dao;
 import model.Carta;
-import model.Color;
-import model.Numero;
+import utils.Color;
+import utils.Numero;
 
 
 import java.sql.SQLException;
@@ -14,7 +14,6 @@ public class Controller {
     Scanner sc = new Scanner(System.in);
     Dao dao;
     int id_Jugador;
-    int count =0;
     int opcionCarta = -2;
     ArrayList<Carta> mano = new ArrayList<Carta>();
     public Controller(){
@@ -26,6 +25,10 @@ public class Controller {
             id_Jugador = inicioSesion();
             if(id_Jugador != 0){
                 System.out.println("Inicio de sesion correcto");
+                addCartaMano();
+                if(mano.size() == 0){
+                    robarManoNueva();
+                }
                 System.out.println("Carta de la mesa");
                 if(checkCartaMesa() != null){
                     System.out.println(checkCartaMesa().toString());
@@ -59,13 +62,7 @@ public class Controller {
                 else{
                     System.out.println("No hay carta de en la mesa");
                 }
-                addCartaMano();
-                if(mano.size() == 0){
-                    System.out.println("Necesitas cartas");
-                    addCartaBase(7);
-                    addCartaMano();
-                    System.out.println("Has robado 7 cartas");
-                }
+
                 while(opcionCarta == -2){
                     menuCartas();
                     opcionCarta = seleccionCarta(opcionCarta);
@@ -82,16 +79,14 @@ public class Controller {
                             addCartaMesa(mano.get(opcionCarta));
                         }
                         else{
-                          /*  if(checkCartaMesa().getNumero().equals(mano.get(opcionCarta).getNumero())){
+                            if(checkCartaMesa().getNumero().equals(mano.get(opcionCarta).getNumero())){
                                 addCartaMesa(mano.get(opcionCarta));
                             }
                             else{
-
-                            }*/
-                            System.out.println("No se puede jugar la carta");
-                            opcionCarta = -2;
+                                System.out.println("No se puede jugar la carta");
+                                opcionCarta = -2;
+                            }
                         }
-
                     }
                 }
                 addCartaMano();
@@ -133,7 +128,7 @@ public class Controller {
         mano = dao.comprovarCartas(id_Jugador);
     }
     private void menuCartas(){
-        count =0;
+        int count = 0;
         for (Carta carta : mano){
             System.out.println( count + "- " + carta.toString());
             count++;
@@ -154,6 +149,12 @@ public class Controller {
     private Carta comprovarMesa(){
         Carta carta = new Carta(id_Jugador);
         return carta;
+    }
+    private void robarManoNueva(){
+        System.out.println("Necesitas cartas");
+        addCartaBase(7);
+        addCartaMano();
+        System.out.println("Has robado 7 cartas");
     }
     private void addCartaMesa(Carta carta){
         dao.addCartaTable(carta);
