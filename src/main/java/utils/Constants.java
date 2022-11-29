@@ -20,4 +20,5 @@ public class Constants {
     public static final String DELETE_PARTIDA = "DELETE FROM partida;";
     public static final String DELETE_CARTA = "DELETE FROM carta;";
     public static final String CREATE_USER = "insert into jugador (usuario,password,nombre,partidas,ganadas) VALUES (?,?,?,0,0);";
+    public static final String query = "SELECT count(*) FROm partida p INNER JOIN carta c ON p.id_carta = c.id WHERE estat = 0 ;";
 }
