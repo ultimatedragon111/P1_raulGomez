@@ -15,6 +15,7 @@ public class Controller {
     Dao dao;
     int id_Jugador;
     int opcionCarta = -2;
+    Carta cartaMesa;
     ArrayList<Carta> mano = new ArrayList<Carta>();
     public Controller(){
         dao = new Dao();
@@ -22,82 +23,68 @@ public class Controller {
     public void init() {
         try {
             dao.connectar();
-            id_Jugador = inicioSesion();
-            if(id_Jugador != 0){
-                System.out.println("Inicio de sesion correcto");
-                addCartaMano();
-                if(mano.size() == 0){
-                    robarManoNueva();
-                }
-                System.out.println("Carta de la mesa");
-                if(checkCartaMesa() != null){
-                    System.out.println(checkCartaMesa().toString());
-                    switch(checkCartaMesa().getNumero()){
-                        case "MASDOS":
-                            if(checkCartaMesa().getEstat() == 0){
-                                addCartaBase(2);
-                                updateEstat();
-                                System.out.println("Robas dos cartas");
-                                opcionCarta = 0;
-                            }
-                            break;
-                        case "MASCUATRO":
-                            if(checkCartaMesa().getEstat() == 0){
-                                addCartaBase(4);
-                                updateEstat();
-                                System.out.println("Robas cuatro cartas");
-                                opcionCarta = 0;
-                            }
-                            break;
-                        case "SALTO":
-                        case "CAMBIO":
-                            if(checkCartaMesa().getEstat() == 0){
-                                System.out.println("Salto de turno");
-                                updateEstat();
-                                opcionCarta = 0;
-                            }
-                            break;
+            if (menuPrincipal() == 1){
+                crearUsuario();
+            }
+            else {
+                id_Jugador = inicioSesion();
+                if (id_Jugador != 0) {
+                    System.out.println("Inicio de sesion correcto");
+                    addCartaMano();
+                    if (mano.size() == 0) {
+                        robarManoNueva();
                     }
-                }
-                else{
-                    System.out.println("No hay carta de en la mesa");
-                }
-
-                while(opcionCarta == -2){
-                    menuCartas();
-                    opcionCarta = seleccionCarta(opcionCarta);
-                    if(opcionCarta == (-1)) {
-                        addCartaBase(1);
-                        addCartaMano();
-                        opcionCarta = -2;
+                    cartaMesa = checkCartaMesa();
+                    System.out.println("Carta de la mesa");
+                    if (cartaMesa != null) {
+                        System.out.println(cartaMesa.toString());
+                        switch (cartaMesa.getNumero()) {
+                            case "MASDOS":
+                            case "MASCUATRO":
+                                if (cartaMesa.getEstat() == 0) {
+                                    opcionCarta = menuCartas("Seleciona una carta jugable o -1 para robar la pila de MASDOS Y MASCUATRO acumuladas (Si pones una carta no valida robaras todas las cartas)");
+                                    if (opcionCarta == -1) {
+                                        totalDrawCards();
+                                    } else if (cartaJugarMesa(mano.get(opcionCarta), cartaMesa)) {
+                                        System.out.println("Carta jugada " + mano.get(opcionCarta).toString());
+                                    } else {
+                                        totalDrawCards();
+                                    }
+                                    opcionCarta = 0;
+                                }
+                                break;
+                            case "SALTO":
+                            case "CAMBIO":
+                                if (cartaMesa.getEstat() == 0) {
+                                    System.out.println("Salto de turno");
+                                    updateEstat();
+                                    opcionCarta = 0;
+                                }
+                                break;
+                        }
+                    } else {
+                        System.out.println("No hay carta de en la mesa");
                     }
-                    else{
-                        if(checkCartaMesa() == null){
-                            addCartaMesa(mano.get(opcionCarta));
-                        }
-                        else if(checkCartaMesa().getColor().equals("NEGRO") || checkCartaMesa().getColor().equals(mano.get(opcionCarta).getColor()) || mano.get(opcionCarta).getColor().equals("NEGRO")){
-                            addCartaMesa(mano.get(opcionCarta));
-                        }
-                        else{
-                            if(checkCartaMesa().getNumero().equals(mano.get(opcionCarta).getNumero())){
-                                addCartaMesa(mano.get(opcionCarta));
-                            }
-                            else{
-                                System.out.println("No se puede jugar la carta");
+                    while (opcionCarta == -2) {
+                        opcionCarta = menuCartas("Seleciona una carta o escribe -1 para robar");
+                        ;
+                        if (opcionCarta == (-1)) {
+                            addCartaBase(1);
+                            addCartaMano();
+                            opcionCarta = -2;
+                        } else {
+                            if (cartaJugarMesa(mano.get(opcionCarta), cartaMesa)) {
+                                System.out.println("Carta jugada " + mano.get(opcionCarta).toString());
+                            } else {
                                 opcionCarta = -2;
                             }
                         }
                     }
+                    addCartaMano();
+                    comprovarVictoria();
+                } else {
+                    System.out.println("Inicio de sesion incorrecto");
                 }
-                addCartaMano();
-                if (mano.size() == 0){
-                    updateNumPartida();
-                    updatePartidasGanadas(id_Jugador);
-                    deleteGame();
-                }
-            }
-            else{
-                System.out.println("Inicio de sesion incorrecto");
             }
             dao.desconectar();
         } catch (SQLException e) {
@@ -127,17 +114,19 @@ public class Controller {
     private void addCartaMano(){
         mano = dao.comprovarCartas(id_Jugador);
     }
-    private void menuCartas(){
+    private int menuCartas(String text){
+        int opcionCarta = -2;
         int count = 0;
         for (Carta carta : mano){
             System.out.println( count + "- " + carta.toString());
             count++;
         }
+        return seleccionCarta(opcionCarta,text);
 
     }
-    private int seleccionCarta(int opcionCarta){
+    private int seleccionCarta(int opcionCarta , String text){
         while(opcionCarta == -2) {
-            System.out.println("Selecciona una carta , si quieres robar una carta escribe -1");
+            System.out.println(text);
             opcionCarta = sc.nextInt();
             if(opcionCarta < -1 || opcionCarta > mano.size()-1){
                 opcionCarta = -2;
@@ -163,7 +152,7 @@ public class Controller {
         return dao.checkCardTable();
     }
     private void updateEstat(){
-        dao.updateEstat(checkCartaMesa());
+        dao.updateEstat();
     }
     private void updateNumPartida(){
         dao.updateGamePlus();
@@ -175,5 +164,73 @@ public class Controller {
         dao.deleteGame();
         dao.deleteCards();
     }
+    private boolean cartaJugarMesa(Carta carta,Carta cartaMesa){
+        if(cartaMesa == null){
+            addCartaMesa(carta);
+            return true;
+        }
+        if(cartaMesa.getNumero().equals(Numero.MASCUATRO.toString()) && cartaMesa.getEstat() == 0){
+            if(carta.getNumero().equals(Numero.MASCUATRO.toString())){
+                addCartaMesa(carta);
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        else if(cartaMesa.getColor().equals(Color.NEGRO.toString()) || cartaMesa.getColor().equals(carta.getColor()) || carta.getColor().equals(Color.NEGRO.toString())){
+            addCartaMesa(carta);
+            return true;
+        }
+        else{
+            if(cartaMesa.getNumero().equals(carta.getNumero())){
+                addCartaMesa(carta);
+                return true;
+            }
+            else{
+                System.out.println("No se puede jugar la carta");
+            }
+        }
+        return false;
+    }
+    private void totalDrawCards(){
+        int numCards = dao.drawCards();
+        System.out.println("Vas a robar " + numCards + " cartas");
+        addCartaBase(numCards);
+        updateEstat();
+    }
+    private void comprovarVictoria(){
+        if (mano.size() == 0){
+            updateNumPartida();
+            updatePartidasGanadas(id_Jugador);
+            deleteGame();
+        }
+    }
+    private int menuPrincipal(){
+        int a = 0;
+        while(a<1 || a>2 ){
+            System.out.println("1- Crea Usuario");
+            System.out.println("2- Iniciar Sesion");
+            a = sc.nextInt();
+
+            if (a<1 || a>2 ){
+                System.out.println("Opcion no valida");
+            }
+        }
+        return a;
+    }
+    private void crearUsuario(){
+        String name,username,password;
+        System.out.println("Escribe el usuario que quieres: ");
+        sc.nextLine();
+        username = sc.nextLine();
+        System.out.println("Escribe la contraseña que quieres: ");
+        password = sc.nextLine();
+        System.out.println("Escribe el nombre que quieres: ");
+        name = sc.nextLine();
+        dao.createUser(username,password,name);
+        System.out.println("Usuario creado");
+    }
+
 
 }

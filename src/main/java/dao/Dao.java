@@ -89,9 +89,8 @@ public class Dao {
         return null;
     }
 
-    public void updateEstat(Carta carta) {
+    public void updateEstat() {
         try (PreparedStatement ps = conexion.prepareStatement(Constants.UPDATE_ESTAT)) {
-            ps.setInt(1, carta.getId_carta());
             ps.executeUpdate();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -127,6 +126,32 @@ public class Dao {
     }
     public void deleteCards(){
         try(PreparedStatement ps = conexion.prepareStatement(Constants.DELETE_CARTA)){
+            ps.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+    public int drawCards(){
+        int drawCards = 0;
+        try (ResultSet rs = conexion.prepareStatement(Constants.TOTAL_MASCUATRO).executeQuery()) {
+            if(rs.next()){
+                drawCards = rs.getInt(1);
+            }
+            try (ResultSet rs2 = conexion.prepareStatement(Constants.TOTAL_MASDOS).executeQuery()) {
+                if(rs2.next()){
+                    drawCards += rs2.getInt(1);
+                }
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return drawCards;
+    }
+    public void createUser(String user,String password,String name){
+        try(PreparedStatement ps = conexion.prepareStatement(Constants.CREATE_USER)){
+            ps.setString(1,user);
+            ps.setString(2,password);
+            ps.setString(3,name);
             ps.executeUpdate();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
