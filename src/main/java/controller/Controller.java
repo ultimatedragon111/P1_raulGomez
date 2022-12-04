@@ -45,17 +45,13 @@ public class Controller {
                                 break;
                             case "SALTO":
                             case "CAMBIO":
-                                if (cartaMesa.getEstat() == 0) {
-                                    System.out.println("Salto de turno");
-                                    updateEstat();
-                                    opcionCarta = 0;
-                                }
+                                opcionCarta = saltoTurno(cartaMesa);
                                 break;
                         }
                     } else {
                         System.out.println("No hay carta de en la mesa");
                     }
-                    jugarCartaComprovacion(opcionCarta);
+                    jugarCartaComprovacion(opcionCarta, cartaMesa);
                     addCartaMano();
                     comprovarVictoria();
                 } else {
@@ -69,6 +65,7 @@ public class Controller {
     }
     private int inicioSesion() throws SQLException {
         System.out.println("Nombre de usuario : ");
+        sc.nextLine();
         String nombre = sc.nextLine();
         System.out.println("Contraseña : ");
         String con = sc.nextLine();
@@ -145,7 +142,16 @@ public class Controller {
             addCartaMesa(carta);
             return true;
         }
-        if(cartaMesa.getNumero().equals(Numero.MASCUATRO.toString()) && cartaMesa.getEstat() == 0){
+        if(cartaMesa.getNumero().equals(Numero.MASDOS.toString()) && cartaMesa.getEstat() == 0){
+            if(carta.getNumero().equals(Numero.MASDOS.toString()) || carta.getNumero().equals(Numero.MASCUATRO.toString())){
+                addCartaMesa(carta);
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        else if(cartaMesa.getNumero().equals(Numero.MASCUATRO.toString()) && cartaMesa.getEstat() == 0){
             if(carta.getNumero().equals(Numero.MASCUATRO.toString())){
                 addCartaMesa(carta);
                 return true;
@@ -217,22 +223,35 @@ public class Controller {
             } else {
                 totalDrawCards();
             }
+            return 0;
         }
-        return 0;
+        return -2;
     }
-    private void jugarCartaComprovacion(int opcionCarta) {
+    private void jugarCartaComprovacion(int opcionCarta ,Carta cartaMesa) {
         while (opcionCarta == -2) {
             opcionCarta = menuCartas("Seleciona una carta o escribe -1 para robar");
             if (opcionCarta == (-1)) {
                 addCartaBase(1);
                 addCartaMano();
+                opcionCarta = -2;
             } else {
                 if (cartaJugarMesa(mano.get(opcionCarta), cartaMesa)) {
                     System.out.println("Carta jugada " + mano.get(opcionCarta).toString());
                 } else {
+                    System.out.println("Carta no valida");
+                    opcionCarta = -2;
                 }
             }
         }
+    }
+    private int saltoTurno(Carta cartaMesa){
+        if (cartaMesa.getEstat() == 0){
+            System.out.println("Salto de turno");
+            updateEstat();
+            return 0;
+        }
+        return -2;
+
     }
 
 
