@@ -41,17 +41,7 @@ public class Controller {
                         switch (cartaMesa.getNumero()) {
                             case "MASDOS":
                             case "MASCUATRO":
-                                if (cartaMesa.getEstat() == 0) {
-                                    opcionCarta = menuCartas("Seleciona una carta jugable o -1 para robar la pila de MASDOS Y MASCUATRO acumuladas (Si pones una carta no valida robaras todas las cartas)");
-                                    if (opcionCarta == -1) {
-                                        totalDrawCards();
-                                    } else if (cartaJugarMesa(mano.get(opcionCarta), cartaMesa)) {
-                                        System.out.println("Carta jugada " + mano.get(opcionCarta).toString());
-                                    } else {
-                                        totalDrawCards();
-                                    }
-                                    opcionCarta = 0;
-                                }
+                                opcionCarta = masCuatroComprovacion(cartaMesa);
                                 break;
                             case "SALTO":
                             case "CAMBIO":
@@ -65,21 +55,7 @@ public class Controller {
                     } else {
                         System.out.println("No hay carta de en la mesa");
                     }
-                    while (opcionCarta == -2) {
-                        opcionCarta = menuCartas("Seleciona una carta o escribe -1 para robar");
-                        ;
-                        if (opcionCarta == (-1)) {
-                            addCartaBase(1);
-                            addCartaMano();
-                            opcionCarta = -2;
-                        } else {
-                            if (cartaJugarMesa(mano.get(opcionCarta), cartaMesa)) {
-                                System.out.println("Carta jugada " + mano.get(opcionCarta).toString());
-                            } else {
-                                opcionCarta = -2;
-                            }
-                        }
-                    }
+                    jugarCartaComprovacion(opcionCarta);
                     addCartaMano();
                     comprovarVictoria();
                 } else {
@@ -230,6 +206,33 @@ public class Controller {
         name = sc.nextLine();
         dao.createUser(username,password,name);
         System.out.println("Usuario creado");
+    }
+    private int masCuatroComprovacion(Carta cartaMesa){
+        if (cartaMesa.getEstat() == 0) {
+            int opcionCarta = menuCartas("Seleciona una carta jugable o -1 para robar la pila de MASDOS Y MASCUATRO acumuladas (Si pones una carta no valida robaras todas las cartas)");
+            if (opcionCarta == (-1)) {
+                totalDrawCards();
+            } else if (cartaJugarMesa(mano.get(opcionCarta), cartaMesa)) {
+                System.out.println("Carta jugada " + mano.get(opcionCarta).toString());
+            } else {
+                totalDrawCards();
+            }
+        }
+        return 0;
+    }
+    private void jugarCartaComprovacion(int opcionCarta) {
+        while (opcionCarta == -2) {
+            opcionCarta = menuCartas("Seleciona una carta o escribe -1 para robar");
+            if (opcionCarta == (-1)) {
+                addCartaBase(1);
+                addCartaMano();
+            } else {
+                if (cartaJugarMesa(mano.get(opcionCarta), cartaMesa)) {
+                    System.out.println("Carta jugada " + mano.get(opcionCarta).toString());
+                } else {
+                }
+            }
+        }
     }
 
 
